@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dao.BookMapper">
+    <select id="getBook" resultMap="Book">
+        SELECT book.id,
+        book.`name`,
+        type.`name` as type,
+        texture.`name` as texture,
+        publisher.`name` as publisherName,
+        brand.`name` as brandName,
+        author.`name` as author,
+        book.date,
+        book.price,
+        book.head,
+        book.brief,
+        book.detail,
+        book.state
+        FROM book
+        LEFT JOIN type on book.type = type.tid
+        LEFT JOIN texture on book.texture = texture.id
+        LEFT JOIN publisher on book.publisher = publisher.id
+        LEFT JOIN brand ON book.brand = brand.id
+        LEFT JOIN author on book.author = author.id
+        <where>
+            and 1=1
+            <if test="type!=null and type !='' ">
+                and type.`name` = #{type}
+            </if>
+            <if test="brand!=null and brand !='' ">
+                and brand.`name` = #{brand}
+            </if>
+            <if test="state!=null and state!='' ">
+                and book.state=#{state}
+            </if>
+        </where>
+    </select>
+    <resultMap id="Book" type="com.entity.Book">
+        <result column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="type" property="type"/>
+        <result column="texture" property="texture"/>
+        <result column="publisherName" property="publisher"/>
+        <result column="brandName" property="brand"/>
+        <result column="author" property="author"/>
+        <result column="date" property="date"/>
+        <result column="price" property="price"/>
+        <result column="head" property="head"/>
+        <result column="brief" property="brief"/>
+        <result column="detail" property="detail"/>
+        <result column="state" property="state"/>
+    </resultMap>
+    <insert id="SetBook">
+        insert into mall.book(id, name, type, texture, publisher, brand, author, date, price, head, brief, detail,
+                              state)
+        values (#{id}, #{name}, #{type}, #{texture}, #{publisher}, #{brand}, #{author}, #{date}, #{price}, #{head},
+                #{brief}, #{detail}, #{state});
+    </insert>
+</mapper>
+

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dao.userMapper">
+    <select id="getUserLoging" resultMap="getuserMenu">
+        SELECT `user`.uid,
+               `user`.username,
+               `user`.`password`,
+               role.rid,
+               role.rname,
+               role_menu.mid,
+               menu.mid as urlID,
+               menu.url
+        FROM role
+                     right JOIN `user` ON `user`.rid = role.rid
+                     LEFT JOIN role_menu ON role.rid = role_menu.rid
+                     LEFT JOIN menu ON menu.mid = role_menu.mid
+        WHERE `user`.username = #{name,jdbcType=VARCHAR}
+    </select>
+    <resultMap id="getuserMenu" type="com.entity.User">
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <collection property="menus" ofType="com.entity.Menu">
+            <result column="url" property="url"/>
+        </collection>
+    </resultMap>
+
+
+    <update id="updInfo" parameterType="User">
+        update mall.user
+        set name    =#{name},
+            sex=#{sex},
+            phone=#{phone},
+            idcard=#{idcard},
+            site=#{site},
+            remarks=#{remarks},
+            entry=#{entry},
+            head=#{head},
+            password=#{password}
+        where uid = #{uid}
+    </update>
+    <update id="updateRole">
+        update mall.user
+        set rid =#{rid}
+        where uid = #{id};
+    </update>
+
+    <select id="getUserLimit" resultMap="getRole">
+        SELECT `user`.uid,
+               `user`.`name`,
+               `user`.sex,
+               `user`.phone,
+               `user`.idcard,
+               `user`.site,
+               `user`.remarks,
+               `user`.entry,
+               case
+                       WHEN `user`.dimission is null THEN '在职'
+                       WHEN `user`.dimission is NOT NULL THEN CONCAT("离职：", `user`.dimission)
+                       END
+                           AS 'dimission',
+               `user`.head,
+               `user`.username,
+               `user`.`password`,
+               CASE
+                       WHEN `user`.state = 1 THEN
+                               '正常'
+                       WHEN `user`.state = 0 THEN
+                               '禁用'
+                       END as 'state',
+
+               role.rname,
+               role.annotation
+
+        FROM `user`
+                     LEFT JOIN role on `user`.rid = role.rid
+        <where>
+           and 1=1
+            <if test="uname != null and uname != ''">
+               and `user`.`name` = #{uname}
+            </if>
+            <if test="rname != null and rname != ''">
+                and role.rname = #{rname}
+            </if>
+            <if test="state != null and state != ''">
+                and `user`.state = #{state}
+            </if>
+        </where>
+        <if test="pageCode != null and pageSize!=null">
+           limit #{pageCode},#{pageSize}
+        </if>
+    </select>
+    <resultMap id="getRole" type="com.entity.User">
+        <result column="uid" property="uid"/>
+        <result column="name" property="name"/>
+        <result column="sex" property="sex"/>
+        <result column="phone" property="phone"/>
+        <result column="idcard" property="idcard"/>
+        <result column="site" property="site"/>
+        <result column="remarks" property="remarks"/>
+        <result column="entry" property="entry"/>
+        <result column="dimission" property="dimission"/>
+        <result column="head" property="head"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="state" property="state"/>
+        <association property="role" javaType="com.entity.Role">
+            <result column="rname" property="rname"/>
+            <result column="annotation" property="annotation"/>
+        </association>
+    </resultMap>
+</mapper>
+

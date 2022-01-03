@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dao.FOrderMapper">
+    <select id="getForder" resultMap="forder">
+        SELECT *
+        from (
+                     SELECT book.id      as serial_number,
+                            f_orderp.num as shoppingNum,
+                            f_orderp.price,
+                            f_orderp.money,
+                            f_orderp.f_order,
+                            f_orderp.state
+                     from f_orderp
+                                  LEFT JOIN book on f_orderp.book = book.id
+                     ) as a
+                     LEFT JOIN (
+                select f_order.id,
+                       f_user.`name`,
+                       f_order.parcelid,
+                       f_order.time,
+                       f_order.date,
+                       CONCAT(f_site.province, f_site.city, f_site.address) as address,
+                       f_order.datetime,
+                       f_order.out_trade_no
+                from f_order
+                             LEFT JOIN f_user on f_order.f_user = f_user.id
+                             LEFT JOIN f_site on f_order.f_site = f_site.id
+                ) as b ON a.f_order = b.id
+        <where>
+            and 1=1
+            <if test="userID!=null and userID!='' ">
+                and b.id=#{userID}
+            </if>
+        </where>
+      <if test="pagecode!='' and pagesize!='' and pagecode!=null and pagesize!=null">
+          limit #{pagecode},#{pagesize}
+      </if>
+    </select>
+    <resultMap id="forder" type="com.entity.FOrder">
+        <result column="id" property="id"/>
+        <result column="name" property="fUser"/>
+        <result column="parcelid" property="parcelid"/>
+        <result column="time" property="time"/>
+        <result column="date" property="date"/>
+        <result column="address" property="fSite"/>
+        <result column="datetime" property="datetime"/>
+        <result column="out_trade_no" property="outTradeNo"/>
+        <collection property="getForderp" ofType="com.entity.FOrderp">
+            <result column="serial_number" property="book"/>
+            <result column="shoppingNum" property="num"/>
+            <result column="price" property="price"/>
+            <result column="money" property="money"/>
+            <result column="f_order" property="fOrder"/>
+            <result column="state" property="state"/>
+        </collection>
+    </resultMap>
+
+    <insert id="SetOrder">
+        insert into mall.f_order(id, f_user, parcelid, time, price, date, f_site, state, datetime, out_trade_no)
+        values (#{id},#{fUser},#{parcelid},#{time},#{price},#{date},#{fSite},#{state},#{datetime},#{outTradeNo});
+    </insert>
+</mapper>
+
